@@ -9,7 +9,8 @@ clone = (field) ->
 
 @GameOfLife = class
 	
-	constructor: (@startData) ->
+	constructor: ({@startData, @rules}) ->
+
 		@reset()
 
 	reset: ->
@@ -23,9 +24,8 @@ clone = (field) ->
 		changes = []
 		for row, y in @data
 
-			if not @next[y]? then @next[y] = []
 			for state, x in row
-				@next[y][x] = @isStillAlive state, x, y
+				@next[y][x] = @isAlive state, x, y
 
 
 		# copy array back in field
@@ -38,12 +38,19 @@ clone = (field) ->
 
 		return changes
 
-	isStillAlive: (wasAlive, x,y) ->
+	isAlive: (wasAlive, x,y) ->
 		neighbors = @countNeighbors x, y
-		return true if !wasAlive and neighbors == 3
-		return false if wasAlive and neighbors < 2
-		return true if wasAlive and 2 <= neighbors <= 3
-		return false
+		if wasAlive
+			for rule in @rules.alive
+				return yes if neighbors is rule
+		else
+			for rule in @rules.born
+				return yes if neighbors is rule
+		no
+		# slower?:
+		#if wasAlive and neighbors in @rules.alive then yes
+		#else if not wasAlive and neighbors in @rules.born then yes
+		#else no
 
 	countNeighbors: (x,y) ->
 		neighbors = 0
