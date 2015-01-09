@@ -1,0 +1,12 @@
+.controls
+{
+	z-index: 100;
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	opacity: 0.4;
+	&:hover
+	{
+		opacity: 1;
+	}
+}

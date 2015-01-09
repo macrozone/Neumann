@@ -1,4 +1,7 @@
 
+
+
+
 @Engine = class
 	
 	constructor: (@automaton) -> 
@@ -13,6 +16,17 @@
 	data: ->
 		@automatonDep.depend()
 		@automaton.getData()
+
+	setData: (data) ->
+		@_changes = @automaton.setData data
+		@automatonDep.changed()
+		Tracker.flush()
+
+	changeData: (change) ->
+		@automaton.changeData change
+		@_changes = [change]
+		@automatonDep.changed()
+		Tracker.flush()
 
 	changes: ->
 		@automatonDep.depend()
@@ -54,7 +68,7 @@
 		@_changes = []
 		@_counter = 0
 		
-		@automaton.reset()
+		@automaton.setData []
 		
 		@resetted = true
 		@stateDep.changed()

@@ -14,21 +14,23 @@ Router.route "GameOfLife",
 	onBeforeAction: ->
 		@next()
 	data: ->
-		width = 768
-		height = 768
+		width = 1024
+		height = 1024
 		
 		width: width
 		height: height
 		rules: "23/3"
+		zoom: -> Session.get("zoom") ? 1
 		engine: new Engine new GameOfLife 
 			startData: createRandomField width,height
 			rules: parse "23/3"
+		presets: -> Presets.find()
 
 
 
-Template.gameOfLife.rendered = ->
+Template.canvasContainer.rendered = ->
 	
-	$container = @$ ".container"
+	$container = @$ ".canvas-container"
 	
 	tiles = []
 	numTiles = 
@@ -40,6 +42,7 @@ Template.gameOfLife.rendered = ->
 			do (x, y) ->
 				canvas = document.createElement "canvas"
 				$container.append canvas
+				if x is 0 then $(canvas).addClass "first-in-row"
 				canvas.width = TILES_SIZE
 				canvas.height = TILES_SIZE
 				context = canvas.getContext "2d"
@@ -68,10 +71,9 @@ Template.gameOfLife.rendered = ->
 						context.clearRect 0, 0, canvas.width, canvas.height
 					draw: (state, x, y, type) ->
 						context.putImageData pixelMap[type][state], x-TILES_SIZE*tileX, y-TILES_SIZE*tileY
-		$container.append $ "<br />"
+	
 	
 	clear = ->
-		console.log "clear"
 		for row in tiles
 			tile.clear() for tile in row
 				
@@ -80,7 +82,7 @@ Template.gameOfLife.rendered = ->
 		tileX = x // TILES_SIZE
 		tileY = y // TILES_SIZE
 		
-		tiles[tileY][tileX].draw state, x,y, type
+		tiles[tileY]?[tileX]?.draw state, x,y, type
 	
 	
 	for row,y in @data.engine.data()
@@ -89,25 +91,63 @@ Template.gameOfLife.rendered = ->
 
 	@autorun => 
 		if Template.currentData().engine.isResetted()
-			Tracker.nonreactive ->
+			clear()
 				
-				for row,y in Template.currentData().engine.data()
-					for state, x in row
-						draw state, x, y, "initial"
+				
 
 	@autorun =>
-		
 		for change in Template.currentData().engine.changes()
 			draw change.state, change.x, change.y 
 		
 
+addDataWithEvent = (event, template) -> 
+	offset = $(event.currentTarget).offset()
+	
+	change = 
+		x: Math.round((event.pageX-offset.left)/template.data.zoom())
+		y: Math.round((event.pageY-offset.top)/template.data.zoom())
+		state: on
+	Template.currentData()?.engine?.changeData change
+
+Template.canvasContainer.events
+	'mousedown .canvas-container': (event, template)->
+		console.log template
+		template.data.mouseDown = on
+	'mouseup .canvas-container': (event, template)->
+		template.data.mouseDown = off
+	'mousemove .canvas-container': (event, template)->
+		if template.data.mouseDown
+			addDataWithEvent event, template
+		
+	'click .canvas-container': addDataWithEvent
+		
 Template.gameOfLife.events
+	'change .presets': (event, template) ->
+		value = $(event.target).val()
+		$rules = template.$(".rules")
+		$rules.val value
+		$rules.trigger "change"
+	'click .random': (event, template) ->
+		width = Template.currentData().width
+		height = Template.currentData().height
+		
+		Template.currentData()?.engine?.setData createRandomField width, height, 0.05
 	'click .play': (event, template) ->
-		template.data.engine.play()
+		Template.currentData()?.engine?.play()
 	'click .step': (event, template) ->
-		template.data.engine.stop()
-		template.data.engine.step()
+		Template.currentData()?.engine?.stop()
+		Template.currentData()?.engine?.step()
 	'click .reset': (event, template) ->
-		template.data.engine.reset()
+		Template.currentData()?.engine?.reset()
+
+
 	'change .rules': (event, template) ->
 		Template.currentData()?.engine?.automaton?.rules = parse $(event.target).val()
+	'change .zoom': (event, template) ->
+		Session.set "zoom", $(event.target).val()
+
+
+
+
+
+

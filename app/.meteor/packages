@@ -10,3 +10,5 @@ coffeescript
 iron:router
 stylus
 
+fourseven:scss
+mizzao:bootstrap-3

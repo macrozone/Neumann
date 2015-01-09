@@ -1,11 +1,34 @@
 <template name="gameOfLife">
-<h1>gameOfLife</h1>
-<input type="text" class="rules" value="{{rules}}"/>
-<button class="play">play</button>
-<button class="step">step</button>
-<button class="reset">reset</button>
-{{engine.counter}}
-<br />
-<div class="container" ></div>
 
+	<div class="panel panel-default controls">
+		<div class="panel-heading">Game of Life</div>
+		<div class="panel-body">
+
+			<select class="presets">
+				{{#each presets}}
+				<option value="{{value}}">{{label}}</option>
+				{{/each}}
+			</select>
+			<input type="text" class="rules" value="{{rules}}"/>
+			<input type="number" class="zoom" value="{{zoom}}"/>
+			<button class="btn btn-default play">play</button>
+			<button class="btn btn-default step">step</button>
+			<button class="btn btn-default reset">reset</button>
+			<button class="btn btn-default random">random</button>
+
+			{{engine.counter}}
+
+		</div>
+	</div>
+
+
+
+	{{>canvasContainer}}
+
+</template>
+
+
+<template name="canvasContainer">
+
+	<div class="canvas-container" style="transform: scale({{zoom}})" ></div>
 </template>

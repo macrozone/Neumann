@@ -3,35 +3,56 @@ clone = (field) ->
 	copy = []
 	for row, y in field
 		if not copy[y]? then copy[y] = []
-		for state, x in row
-			copy[y][x] = state
+		if row?
+			for state, x in row
+				copy[y][x] = state
 	copy
 
 @GameOfLife = class
 	
-	constructor: ({@startData, @rules}) ->
-
-		@reset()
-
-	reset: ->
-		@data = clone @startData
-		@next = clone @startData
+	constructor: ({@rules}) ->
+		@setData []
 
 	getData: -> @data
 
+	changeData: (change) ->
+		{x,y,state} = change
+		@data[y] = [] unless @data[y]?
+		@data[y][x] = state
+		@width = Math.max @width, x+1
+		@height = Math.max @height, y+1
+
+	setData: (@data) ->
+		changes = []
+		@next = []
+		@width = 0
+		@height = 0
+		for row, y in @data
+			@height = Math.max @height, y
+			if row?
+				for state, x in row
+					@width = Math.max @width, x
+					changes.push {x,y,state}
+		changes
 
 	step: ->
 		changes = []
-		for row, y in @data
-
-			for state, x in row
+		
+		for y in [0..@height]
+			
+			@next[y] = [] unless @next[y]?
+			
+			for x in [0..@width]
+				state = @data[y]?[x]
 				@next[y][x] = @isAlive state, x, y
-
-
+				if @next[y][x] #adjust space
+					@width = Math.max @width, x+1
+					@height = Math.max @height, y+1
+			
 		# copy array back in field
 		for row, y in @next
 			for state, x in row
-
+				@data[y] = [] unless @data[y]?
 				if @data[y][x] isnt state 
 					changes.push x:x, y:y, state: state
 				@data[y][x] = state
