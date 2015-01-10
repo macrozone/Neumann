@@ -48,7 +48,7 @@
 
 	play: ->
 		@running = !@running
-		
+
 		@stateDep.changed()
 		turn = =>
 			if @running
@@ -67,18 +67,15 @@
 	reset: ->
 		@_changes = []
 		@_counter = 0
-		
 		@automaton.setData []
-		
+
 		@resetted = true
 		@stateDep.changed()
 		#propagate initial scope
 		@automatonDep.changed()
 
 	step: ->
-		if @resetted
-			Meteor.defer =>
-				@resetted = false
+		@resetted = false
 		@_changes = @automaton.step()
 		@_counter++
 		# propagate change, this will redraw all plots

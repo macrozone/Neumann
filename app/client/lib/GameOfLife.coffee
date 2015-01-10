@@ -37,26 +37,27 @@ clone = (field) ->
 
 	step: ->
 		changes = []
-		
+
+
 		for y in [0..@height]
-			
+
 			@next[y] = [] unless @next[y]?
-			
+
 			for x in [0..@width]
 				state = @data[y]?[x]
 				@next[y][x] = @isAlive state, x, y
 				if @next[y][x] #adjust space
 					@width = Math.max @width, x+1
 					@height = Math.max @height, y+1
-			
+
 		# copy array back in field
 		for row, y in @next
 			for state, x in row
 				@data[y] = [] unless @data[y]?
+				
 				if @data[y][x] isnt state 
-					changes.push x:x, y:y, state: state
+					changes.push {x,y,state}
 				@data[y][x] = state
-
 		return changes
 
 	isAlive: (wasAlive, x,y) ->

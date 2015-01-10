@@ -29,9 +29,8 @@ Router.route "GameOfLife",
 
 
 Template.canvasContainer.rendered = ->
-	
 	$container = @$ ".canvas-container"
-	
+
 	tiles = []
 	numTiles = 
 		x: (@data.width-1) // TILES_SIZE
@@ -71,38 +70,33 @@ Template.canvasContainer.rendered = ->
 						context.clearRect 0, 0, canvas.width, canvas.height
 					draw: (state, x, y, type) ->
 						context.putImageData pixelMap[type][state], x-TILES_SIZE*tileX, y-TILES_SIZE*tileY
-	
-	
+
 	clear = ->
+		console.log "clear"
 		for row in tiles
 			tile.clear() for tile in row
-				
+
 
 	draw = (state, x, y, type = "changes") ->
 		tileX = x // TILES_SIZE
 		tileY = y // TILES_SIZE
-		
 		tiles[tileY]?[tileX]?.draw state, x,y, type
-	
-	
-	for row,y in @data.engine.data()
-		for state, x in row
-			draw state, x, y, "initial"
 
-	@autorun => 
+
+	@autorun -> 
+
 		if Template.currentData().engine.isResetted()
 			clear()
-				
-				
 
-	@autorun =>
+
+	@autorun ->
 		for change in Template.currentData().engine.changes()
 			draw change.state, change.x, change.y 
 		
 
 addDataWithEvent = (event, template) -> 
 	offset = $(event.currentTarget).offset()
-	
+
 	change = 
 		x: Math.round((event.pageX-offset.left)/template.data.zoom())
 		y: Math.round((event.pageY-offset.top)/template.data.zoom())
@@ -111,7 +105,6 @@ addDataWithEvent = (event, template) ->
 
 Template.canvasContainer.events
 	'mousedown .canvas-container': (event, template)->
-		console.log template
 		template.data.mouseDown = on
 	'mouseup .canvas-container': (event, template)->
 		template.data.mouseDown = off
