@@ -10,7 +10,8 @@ parse = (rules) ->
 	born: (parseInt i for i in born.split "")
 
 TILES_SIZE = 256 # OPTIMAL
-Router.route "GameOfLife", 
+Router.route "/", 
+	template: "gameOfLife"
 	onBeforeAction: ->
 		@next()
 	data: ->
